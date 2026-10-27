@@ -10,6 +10,7 @@ import {
   signRegistration, signSession, verifyPassword,
 } from './auth.js';
 import type { DB } from './db.js';
+import { config } from './config.js';
 import { sendVerificationCode } from './mailer.js';
 import type { MatchEngine } from './matching/engine.js';
 import { getUser, photosOf, toMe, type UserRow } from './users.js';
@@ -55,8 +56,9 @@ export function createRoutes(db: DB, engine: MatchEngine, uploadDir: string, onU
       `INSERT INTO email_codes (email, code_hash, expires_at, attempts) VALUES (?, ?, ?, 0)
        ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at, attempts = 0`,
     ).run(email, hashCode(code), Date.now() + CODE_TTL_MS);
-    await sendVerificationCode(email, code);
-    res.json({ ok: true });
+    const delivered = await sendVerificationCode(email, code);
+    // Local development without email: hand the code back so the app can show it.
+    res.json(delivered || config.isProduction ? { ok: true } : { ok: true, devCode: code });
   });
 
   r.post('/auth/email/verify', (req, res) => {

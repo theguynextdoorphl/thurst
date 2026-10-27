@@ -3,10 +3,11 @@ import { config } from './config.js';
 
 const transport = config.smtp ? nodemailer.createTransport(config.smtp) : null;
 
-export async function sendVerificationCode(email: string, code: string): Promise<void> {
+/** Returns false when no email service is set up and the code was only logged. */
+export async function sendVerificationCode(email: string, code: string): Promise<boolean> {
   if (!transport) {
     console.log(`[mail] verification code for ${email}: ${code}`);
-    return;
+    return false;
   }
   await transport.sendMail({
     from: config.mailFrom,
@@ -14,4 +15,5 @@ export async function sendVerificationCode(email: string, code: string): Promise
     subject: 'Your Thurst code',
     text: `Your Thurst verification code is ${code}. It expires in 10 minutes.`,
   });
+  return true;
 }
