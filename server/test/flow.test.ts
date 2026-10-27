@@ -46,7 +46,10 @@ async function call(method: string, url: string, body?: unknown, token?: string)
 
 async function register(username: string, birthdate = '1990-01-01') {
   const email = `${username}@example.com`;
-  assert.equal((await call('POST', '/auth/email/start', { email })).status, 200);
+  const started = await call('POST', '/auth/email/start', { email });
+  assert.equal(started.status, 200);
+  // No email service in tests, so the server hands the code back for the app to show.
+  assert.equal(started.body.devCode, codes.get(email));
   const wrong = await call('POST', '/auth/email/verify', { email, code: '000000' === codes.get(email) ? '111111' : '000000' });
   assert.equal(wrong.status, 400);
   const verified = await call('POST', '/auth/email/verify', { email, code: codes.get(email) });

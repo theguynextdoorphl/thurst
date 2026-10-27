@@ -1,11 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { api } from '../../api';
-import { Body, Button, ErrorText, Field, H1, Screen } from '../../components/ui';
+import { Body, Button, Caption, Card, ErrorText, Field, H1, Screen } from '../../components/ui';
 
 export default function RegisterVerify() {
-  const { email } = useLocalSearchParams<{ email: string }>();
-  const [code, setCode] = useState('');
+  const params = useLocalSearchParams<{ email: string; devCode?: string }>();
+  const email = params.email;
+  // Set when the server has no email service (local development).
+  const [devCode, setDevCode] = useState(params.devCode);
+  const [code, setCode] = useState(params.devCode ?? '');
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -26,7 +29,9 @@ export default function RegisterVerify() {
   const resend = async () => {
     setError('');
     try {
-      await api('POST', '/auth/email/start', { email });
+      const res = await api<{ devCode?: string }>('POST', '/auth/email/start', { email });
+      setDevCode(res.devCode);
+      if (res.devCode) setCode(res.devCode);
       setNote('We sent a new code.');
     } catch (e) {
       setError((e as Error).message);
@@ -53,6 +58,12 @@ export default function RegisterVerify() {
         textContentType="oneTimeCode"
         onSubmitEditing={submit}
       />
+      {devCode ? (
+        <Card>
+          <Caption>Email isn't set up on this server yet, so here's your code. It's filled in for you.</Caption>
+          <Body>{devCode}</Body>
+        </Card>
+      ) : null}
       {note ? <Body muted>{note}</Body> : null}
       <ErrorText>{error}</ErrorText>
     </Screen>

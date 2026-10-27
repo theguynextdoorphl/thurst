@@ -12,8 +12,8 @@ export default function RegisterEmail() {
     setBusy(true);
     setError('');
     try {
-      await api('POST', '/auth/email/start', { email });
-      router.push({ pathname: '/register-verify', params: { email: email.trim().toLowerCase() } });
+      const { devCode } = await api<{ devCode?: string }>('POST', '/auth/email/start', { email });
+      router.push({ pathname: '/register-verify', params: { email: email.trim().toLowerCase(), devCode } });
     } catch (e) {
       setError((e as Error).message);
     } finally {

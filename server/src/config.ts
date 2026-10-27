@@ -7,6 +7,7 @@ if (env.NODE_ENV === 'production' && (!env.JWT_SECRET || env.JWT_SECRET === 'cha
 }
 
 export const config = {
+  isProduction: env.NODE_ENV === 'production',
   port: Number(env.PORT ?? 4000),
   jwtSecret: env.JWT_SECRET ?? 'dev-only-secret',
   databaseFile: env.DATABASE_FILE ?? './thurst.db',
