@@ -1,0 +1,11 @@
+{
+  "name": "thurst",
+  "private": true,
+  "workspaces": ["shared", "server", "app"],
+  "scripts": {
+    "server": "npm run dev -w server",
+    "app": "npm start -w app",
+    "test": "npm test -w server",
+    "typecheck": "npm run typecheck -w shared && npm run typecheck -w server && npm run typecheck -w app"
+  }
+}
